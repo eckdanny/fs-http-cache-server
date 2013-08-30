@@ -1,0 +1,18 @@
+{
+  "name": "fs-http-cache-server",
+  "version": "0.0.0",
+  "description": "Filesystem-cached HTTP data server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/eckdanny/fs-http-cache-server.git"
+  },
+  "author": "Danny Eck",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/eckdanny/fs-http-cache-server/issues"
+  }
+}
