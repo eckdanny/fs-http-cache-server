@@ -2,7 +2,6 @@ var fs   = require('fs')
   , http = require('http')
   ;
 
-
 http.createServer(function (req, res) {
 
   var upc = /^\/upc\/(\d{12})$/.exec(req.url);
@@ -35,8 +34,23 @@ http.createServer(function (req, res) {
           // The cached response is stale
           } else {
 
-            // @todo
-            console.log('I have to download a fresh copy!');
+            console.log('Downloading a fresh copy!');
+
+            var options = {
+              hostname:'mobilebyod.shld.net',
+              path: '/stb_dispatcher/service/rest/scantrybuy/getProductDetails?in_upc=' + upc
+            };
+
+            http.get(options, function (_res_) {
+
+              if (_res_.statusCode === 200) {
+                _res_.pipe(res);
+                _res_.pipe(fs.createWriteStream('cache/'+upc+'.json'));
+              }
+
+            }).on('error', function (err) {
+              console.log('[ERROR] ' + err.message);
+            });
 
           }
 
@@ -51,19 +65,10 @@ http.createServer(function (req, res) {
 
         http.get(options, function (_res_) {
 
-          // console.log(_res_.headers);
-
-          // console.log('Got _response_: ' + _res_.statusCode);
-
           if (_res_.statusCode === 200) {
             _res_.pipe(res);
             _res_.pipe(fs.createWriteStream('cache/'+upc+'.json'));
           }
-
-          // _res_.setEncoding('utf8');
-          // _res_.on('data', function (data) {
-          //   console.log('I got some data:', data);
-          // });
 
         }).on('error', function (err) {
           console.log('[ERROR] ' + err.message);
@@ -72,17 +77,9 @@ http.createServer(function (req, res) {
       }
     });
 
-
-
   } else {
-
-    res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end(JSON.stringify({
-      url: req.url,
-      method: req.method,
-      headers: req.headers
-    }));
+    res.writeHead(400, {'Content-Type': 'text/plain'});
+    res.end('I only cache requests for requests like /upc/:upcNumber');
   }
 
 }).listen(4000);
-
