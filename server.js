@@ -26,7 +26,7 @@ http.createServer(function (req, res) {
         fs.stat('cache/'+upc+'.json', function (err, stats) {
           var mtime = (new Date(stats.mtime)).getTime();
 
-          // Fresh
+          // Fresh (newer than 24 hours)
           if ( (Date.now() - mtime) < 1000*60*60*24 ) {
             fs.readFile('cache/' + upc + '.json', function (err, data) {
               if (err) {
@@ -40,23 +40,22 @@ http.createServer(function (req, res) {
 
           // Stale
           } else {
+            console.log('[INFO] Updating cache for UPC: ' + upc + '...');
             pdp.update(upc, function (data) {
               data.pipe(res);
               data.pipe(fs.createWriteStream('cache/' + upc + '.json'));
-              // data.on('close', function () {
-              //   console.log('[INFO] Updated cache for UPC: ' + upc);
-              // });
-              console.log('[INFO] Updated cache for UPC: ' + upc);
+              console.log('[INFO] Replied with cached reponse for UPC: ' + upc);
             });
           }
         });
 
       // Not Cached
       } else {
+        console.log('[INFO] Fetching data for UPC: ' + upc + '...');
         pdp.update(upc, function (data) {
           data.pipe(res);
           data.pipe(fs.createWriteStream('cache/' + upc + '.json'));
-          console.log('[INFO] Created cached response for UPC: ' + upc);
+          console.log('[INFO] Replied with cached reponse for UPC: ' + upc);
         });
       }
     });
