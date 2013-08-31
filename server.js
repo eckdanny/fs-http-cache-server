@@ -1,85 +1,66 @@
 var fs   = require('fs')
   , http = require('http')
+  , pdp = require('./pdp')
+  , PORT = 4000
   ;
 
 http.createServer(function (req, res) {
 
   var upc = /^\/upc\/(\d{12})$/.exec(req.url);
 
-  if (upc && upc.length === 2) {
+  // Bad Request
+  if (!upc || (upc.length !== 2) ) {
+
+    res.writeHead(400, {'Content-Type': 'text/plain'});
+    res.end('I only cache requests for valid UPCs at the URI /upc/:upcNumber');
+
+  } else {
 
     upc = upc.pop();
-
     fs.exists('cache/'+upc+'.json', function(exists) {
 
+      // Cached
       if (exists) {
+
+        // Determine if cache is stale
         fs.stat('cache/'+upc+'.json', function (err, stats) {
-
-          // console.log('file last modified: ', stats.mtime);
-
           var mtime = (new Date(stats.mtime)).getTime();
 
-          // Less than a day old
+          // Fresh
           if ( (Date.now() - mtime) < 1000*60*60*24 ) {
-
-            fs.readFile('cache/'+upc+'.json', function (err, data) {
+            fs.readFile('cache/' + upc + '.json', function (err, data) {
               if (err) {
                 console.log('[ERROR] Could not read file!');
               } else {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(data, 'utf-8');
+                console.log('[INFO] Replied with cached reponse for UPC: ' + upc);
               }
             });
 
-          // The cached response is stale
+          // Stale
           } else {
-
-            console.log('Downloading a fresh copy!');
-
-            var options = {
-              hostname:'mobilebyod.shld.net',
-              path: '/stb_dispatcher/service/rest/scantrybuy/getProductDetails?in_upc=' + upc
-            };
-
-            http.get(options, function (_res_) {
-
-              if (_res_.statusCode === 200) {
-                _res_.pipe(res);
-                _res_.pipe(fs.createWriteStream('cache/'+upc+'.json'));
-              }
-
-            }).on('error', function (err) {
-              console.log('[ERROR] ' + err.message);
+            pdp.update(upc, function (data) {
+              data.pipe(res);
+              data.pipe(fs.createWriteStream('cache/' + upc + '.json'));
+              // data.on('close', function () {
+              //   console.log('[INFO] Updated cache for UPC: ' + upc);
+              // });
+              console.log('[INFO] Updated cache for UPC: ' + upc);
             });
-
           }
-
         });
 
+      // Not Cached
       } else {
-
-        var options = {
-          hostname:'mobilebyod.shld.net',
-          path: '/stb_dispatcher/service/rest/scantrybuy/getProductDetails?in_upc=' + upc
-        };
-
-        http.get(options, function (_res_) {
-
-          if (_res_.statusCode === 200) {
-            _res_.pipe(res);
-            _res_.pipe(fs.createWriteStream('cache/'+upc+'.json'));
-          }
-
-        }).on('error', function (err) {
-          console.log('[ERROR] ' + err.message);
+        pdp.update(upc, function (data) {
+          data.pipe(res);
+          data.pipe(fs.createWriteStream('cache/' + upc + '.json'));
+          console.log('[INFO] Created cached response for UPC: ' + upc);
         });
-
       }
     });
-
-  } else {
-    res.writeHead(400, {'Content-Type': 'text/plain'});
-    res.end('I only cache requests for requests like /upc/:upcNumber');
   }
+}).listen(PORT);
 
-}).listen(4000);
+console.log('[INFO] Server started on port: ' + PORT);
