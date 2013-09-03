@@ -17,6 +17,7 @@ exports.update = function (upc, cb) {
   // Go get it!
   http.get(options, function (res) {
     if (res.statusCode === 200) {
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'max-age=86400' });
       cb(res);
     }
   }).on('error', function (err) {

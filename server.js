@@ -32,7 +32,7 @@ http.createServer(function (req, res) {
               if (err) {
                 console.log('[ERROR] Could not read file!');
               } else {
-                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'max-age=86400' });
                 res.end(data, 'utf-8');
                 console.log('[INFO] Replied with cached reponse for UPC: ' + upc);
               }
