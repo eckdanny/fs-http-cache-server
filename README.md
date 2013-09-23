@@ -13,9 +13,6 @@ This simple demonstrative implementation uses the server's local filesystem to c
 
 A response is then either streamed from the origin server or from the filesystem cache according the the diagram below:
 
-<figure>
-  <img style="text-align: center;" src="https://raw.github.com/eckdanny/fs-http-cache-server/master/dfm.jpg" alt="Activity Diagram">
-  <figcaption>My Caption</figcaption>
-</figure>
+<img style="display: block; margin: 0 auto;" src="https://raw.github.com/eckdanny/fs-http-cache-server/master/dfm.jpg" alt="Activity Diagram">
 
 The file-system cache may be implemented to reduce latency in a computationally-expensive SQL query.
