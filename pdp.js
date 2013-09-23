@@ -1,4 +1,6 @@
-var http = require('http');
+var http = require('http')
+    config = require('./config.js')
+  ;
 
 /**
  * Downloads the PDP from the original source
@@ -10,11 +12,11 @@ exports.update = function (upc, cb) {
 
   // Original Source
   var options = {
-    hostname:'mobilebyod.shld.net',
-    path: '/stb_dispatcher/service/rest/scantrybuy/getProductDetails?in_upc=' + upc
+    hostname: config.hostname,
+    path: config.path + '?in_upc=' + upc
   };
 
-  // Go get it!
+  // Request
   http.get(options, function (res) {
     if (res.statusCode === 200) {
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'max-age=86400' });

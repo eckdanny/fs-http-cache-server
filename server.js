@@ -8,7 +8,6 @@ http.createServer(function (req, res) {
 
   var upc = /^\/upc\/(\d{12})$/.exec(req.url);
 
-  // Bad Request
   if (!upc || (upc.length !== 2) ) {
 
     res.writeHead(400, {'Content-Type': 'text/plain'});
@@ -26,7 +25,7 @@ http.createServer(function (req, res) {
         fs.stat('cache/'+upc+'.json', function (err, stats) {
           var mtime = (new Date(stats.mtime)).getTime();
 
-          // Fresh (newer than 24 hours)
+          // Fresh
           if ( (Date.now() - mtime) < 1000*60*60*24 ) {
             fs.readFile('cache/' + upc + '.json', function (err, data) {
               if (err) {
